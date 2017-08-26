@@ -41,28 +41,21 @@ class loadImage {
         if let image = imageCache.object(forKey: url as NSURL) {
             complection(image, url)
         } else {
-            localImage(id: id, complection: { (image) in
-                if image != nil {
-                    self.imageCache.setObject(image!, forKey: url as NSURL)
-                    complection(image, url)
-                } else {
-                    DispatchQueue.global(qos: .utility).async {
-                        fetch.requestGetData(url: url, complection: { (imgdata) in
-                            if imgdata != nil {
-                                let img = UIImage(data: imgdata!)
-                                if img != nil {
-                                    self.imageCache.setObject(img!, forKey: url as NSURL)
-                                    if let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
-                                        let path = dir.appendingPathComponent(id)
-                                        try? imgdata!.write(to: path, options: Data.WritingOptions.noFileProtection)
-                                    }
-                                    complection(img!, url)
-                                }
+            DispatchQueue.global(qos: .utility).async {
+                fetch.requestGetData(url: url, complection: { (imgdata) in
+                    if imgdata != nil {
+                        let img = UIImage(data: imgdata!)
+                        if img != nil {
+                            self.imageCache.setObject(img!, forKey: url as NSURL)
+                            if let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                                let path = dir.appendingPathComponent(id)
+                                try? imgdata!.write(to: path, options: Data.WritingOptions.noFileProtection)
                             }
-                        })
+                            complection(img!, url)
+                        }
                     }
-                }
-            })
+                })
+            }
         }
         
         
